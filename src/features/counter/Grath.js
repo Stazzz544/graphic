@@ -8,11 +8,14 @@ import {
 	Title,
 	Tooltip,
 	Legend,
+	defaults
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Line, Chart } from 'react-chartjs-2';
 import { useSelector, useDispatch } from 'react-redux';
 import { dataAccumulator } from './grathSlice';
 import { useEffect } from 'react';
+
+ChartJS.defaults.plugins.tooltip = false
 
 ChartJS.register(
 	CategoryScale,
@@ -40,9 +43,9 @@ const Grath = () => {
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			dispatch(dataAccumulator(getRandomInt(0.2, 10)))
+			dispatch(dataAccumulator(getRandomInt(-6, 2)))
 			numOfSegments(grathData.length)
-		}, 100);
+		}, 1000);
 
 		return () => clearInterval(interval);
 	}, [dispatch, grathData]);
@@ -54,45 +57,59 @@ const Grath = () => {
 		setSegments(arr);
 	}
 
-	const labels = segments
+	const labels = segments //массив из интервалов [июнь, август, ...]
+
 
 	const data = {
 		labels,
 		datasets: [ //линия графика
 			{
-				label: 'Мой график1',
-				data: grathData,
-				borderColor: 'rgb(255, 99, 132)',
-				backgroundColor: 'rgba(255, 99, 132, 0.5)',	
-				pointBorderColor: '#111',
-				pointBackgroundColor: '#ff4000',
-				pointBorderWidth: 1,
-				animations: 'none',
-				borderWidth: 1,
-				ChartData:{
-					height: 300,
-				}
+				label: 'Мой график1', //назваие рядом с кнопкой диаграммы
+				data: grathData,//массив со значениями по которым строится график
+				borderColor: 'rgb(255, 99, 132)',// цвет линии диаграммы
+				backgroundColor: 'rgba(255, 99, 132, 0.5)',	//заливка квадрата рядом с кнопкой диаграммы
+				pointBorderColor: '#111',//цвет границы кружка в линии диаграммы
+				pointBackgroundColor: '#ff4000',//заливка кружка в линии диаграммы
+				pointBorderWidth: 1, // толщина границы кружка в линии диаграммы
+				animations: 'none', // тут можно задействовать анимацию выростания диграммы вверх. при ди намических данных выглядит коряво
+				borderWidth: 1, //толщина линии диаграммы
 			},
 		],
 	};
 
+	//https://www.chartjs.org/docs/latest/configuration/tooltip.html вкладка конфигурации
+
 	const options = {
-		maintainAspectRatio: false, // фикси
+		maintainAspectRatio: false, // true - адаптивные ширина и высота, false - ручная настройка width и height
 		responsive: true,
 		plugins: {
 			legend: {
-				position: 'top'
+				position: 'top',// расположение легенды
+				labels: {
+					font:{
+						size:12,//размер текста рядом с кнопкой диграммы
+						color: 'blue'
+					}
+				}
 			},
 			title: {
-				display: true,
-				text: 'Chart.js Line Chart',
+				display: true,//отображение названия графика
+				text: 'Chart.js Line Chart', //название графика
 			},
+			tooltip: {
+				enabled: true, //убирает описание в попапе
+				bodyColor: 'red' // цвет текста в попапе
+			}
 		},
 		layout: {
-			height: 100,
-			responsive: true,	
+			responsive: false,
+			padding: {
+				left: 50 //отступ диаграммы от какого-либо края
+		  }
 		},
-	};
+		
+		
+}
 
 
 	return (
