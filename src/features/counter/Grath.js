@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
 	Chart as ChartJS,
 	CategoryScale,
@@ -24,15 +24,13 @@ ChartJS.register(
 	Legend //плитки выбора графика
 );
 
-
-
-
-
-
 const Grath = () => {
 	const grathData = useSelector(state => state.grath.grathData);
 	const dispatch = useDispatch();
-	console.log(grathData)
+	const [segments, setSegments] = useState([]);
+	
+
+	console.log('grathData', grathData)
 
 	function getRandomInt(min, max) {
 		min = Math.ceil(min);
@@ -42,13 +40,21 @@ const Grath = () => {
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			dispatch(dataAccumulator(getRandomInt(0,4, 10)))
-			console.log('work')
-		}, 1000);
-		return () => clearInterval(interval);
-	}, []);
+			dispatch(dataAccumulator(getRandomInt(0.2, 10)))
+			numOfSegments(grathData.length)
+		}, 100);
 
-	const labels = ['','','','','','','','','','','','','','','','','','',];
+		return () => clearInterval(interval);
+	}, [dispatch, grathData]);
+
+
+	const numOfSegments = (amount) => {
+		const arr = [];
+		for(let i = 0; i < amount; i++) arr.push('');
+		setSegments(arr);
+	}
+
+	const labels = segments
 
 	const data = {
 		labels,
@@ -57,28 +63,17 @@ const Grath = () => {
 				label: 'Мой график1',
 				data: grathData,
 				borderColor: 'rgb(255, 99, 132)',
-				backgroundColor: 'rgba(255, 99, 132, 0.5)',
-				
-				
+				backgroundColor: 'rgba(255, 99, 132, 0.5)',	
 				pointBorderColor: '#111',
 				pointBackgroundColor: '#ff4000',
 				pointBorderWidth: 1,
 				animations: 'none',
-				
-				
-				
 				borderWidth: 1,
 				ChartData:{
 					height: 300,
 				}
 			},
 		],
-		scaleLabel: {
-			display: true,
-			
-			labelString: "Speed in Miles per Hour",
-			fontColor: "green"
-		 }
 	};
 
 	const options = {

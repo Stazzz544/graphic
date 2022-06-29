@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 
 const initialState = {
-	grathData: [3,5,3,2,6,7,4,2,7,8, 11, 22, 5,2,1,5,7,4,2,6]
+	grathData: []
 };
 
 export const grathSlice = createSlice({
