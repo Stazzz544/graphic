@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
 	Chart as ChartJS,
 	CategoryScale,
@@ -8,14 +7,14 @@ import {
 	Title,
 	Tooltip,
 	Legend,
-	defaults
 } from 'chart.js';
-import { Line, Chart } from 'react-chartjs-2';
-import { useSelector, useDispatch } from 'react-redux';
-import { dataAccumulator } from './grathSlice';
+import { Line } from 'react-chartjs-2';
+import { useDispatch } from 'react-redux';
+import { dataAccumulator, setStartDataValue } from './grathSlice';
 import { useEffect } from 'react';
+import './grath.css';
+import {dateFromUTC } from '../../utils/utils'
 
-ChartJS.defaults.plugins.tooltip = false
 
 ChartJS.register(
 	CategoryScale,
@@ -27,52 +26,81 @@ ChartJS.register(
 	Legend //плитки выбора графика
 );
 
-const Grath = () => {
-	const grathData = useSelector(state => state.grath.grathData);
+const Grath = ({
+	minRange,
+	maxEange,
+	id,
+	grathValue,
+	label,
+	startIntervalValue,
+	grathName,
+	updateTime,
+	timeInterval,
+	lastDataUpdate,
+	baseColor
+}) => {
 	const dispatch = useDispatch();
-	const [segments, setSegments] = useState([]);
-	
-
-	console.log('grathData', grathData)
-
 	function getRandomInt(min, max) {
 		min = Math.ceil(min);
 		max = Math.floor(max);
 		return Math.floor(Math.random() * (max - min)) + min;
 	}
 
+	function generateDarkColorRgb() {  //Генератор случайного тёмного цвета
+		const red = Math.floor(Math.random() * 256/2);
+		const green = Math.floor(Math.random() * 256/2);
+		const blue = Math.floor(Math.random() * 256/2);
+		return "rgb(" + red + ", " + green + ", " + blue + ")";
+	 }
+
+	useEffect(() => { //для первоначального сегментирования графика
+		const segments = numOfSegments(startIntervalValue)
+		const randomColor = generateDarkColorRgb()
+		
+		dispatch(setStartDataValue({
+			id: id, 
+			segments: segments, 
+			baseColor: randomColor}))
+	}, [])
+
 	useEffect(() => {
 		const interval = setInterval(() => {
-			dispatch(dataAccumulator(getRandomInt(-6, 2)))
-			numOfSegments(grathData.length)
-		}, 1000);
+
+			dispatch(dataAccumulator({
+				data: getRandomInt(minRange, maxEange), 
+				id: id,
+				lastDataUpdate: dateFromUTC(Date.now())
+			}))
+
+		}, updateTime);
 
 		return () => clearInterval(interval);
-	}, [dispatch, grathData]);
+	}, [dispatch, grathValue]);
 
 
 	const numOfSegments = (amount) => {
-		const arr = [];
-		for(let i = 0; i < amount; i++) arr.push('');
-		setSegments(arr);
+		const arrOfSegments = [];
+		for (let i = 0; i < amount; i++) arrOfSegments.push('');
+		return arrOfSegments;
 	}
 
-	const labels = segments //массив из интервалов [июнь, август, ...]
+	const labels = timeInterval //массив из интервалов [июнь, август, ...]
 
+	
 
 	const data = {
 		labels,
 		datasets: [ //линия графика
 			{
-				label: 'Мой график1', //назваие рядом с кнопкой диаграммы
-				data: grathData,//массив со значениями по которым строится график
-				borderColor: 'rgb(255, 99, 132)',// цвет линии диаграммы
-				backgroundColor: 'rgba(255, 99, 132, 0.5)',	//заливка квадрата рядом с кнопкой диаграммы
+				label: `последнее обновление данных в ${lastDataUpdate}`, //назваие рядом с кнопкой диаграммы
+				data: grathValue,//массив со значениями по которым строится график
+				borderColor: baseColor,// цвет линии диаграммы
+				backgroundColor: baseColor,	//заливка квадрата рядом с кнопкой диаграммы
 				pointBorderColor: '#111',//цвет границы кружка в линии диаграммы
 				pointBackgroundColor: '#ff4000',//заливка кружка в линии диаграммы
 				pointBorderWidth: 1, // толщина границы кружка в линии диаграммы
 				animations: 'none', // тут можно задействовать анимацию выростания диграммы вверх. при ди намических данных выглядит коряво
-				borderWidth: 1, //толщина линии диаграммы
+				borderWidth: 2, //толщина линии диаграммы
 			},
 		],
 	};
@@ -86,35 +114,58 @@ const Grath = () => {
 			legend: {
 				position: 'top',// расположение легенды
 				labels: {
-					font:{
-						size:12,//размер текста рядом с кнопкой диграммы
-						color: 'blue'
-					}
+					font: {
+						size: 20,//размер текста рядом с кнопкой диграммы
+					},
+					boxWidth: 70,
+					color: 'black',//цвет текста в легенде
 				}
 			},
 			title: {
 				display: true,//отображение названия графика
-				text: 'Chart.js Line Chart', //название графика
+				text: grathName, //название графика
+				font: {
+					size: 30
+				}
 			},
 			tooltip: {
 				enabled: true, //убирает описание в попапе
-				bodyColor: 'red' // цвет текста в попапе
-			}
+				bodyColor: 'red', // цвет текста в попапе
+				padding: 100,
+				borderRadius: 100,
+				borderColor: 'white',
+				borderWidth: 10,
+				callbacks: {
+					labelTextColor: function (context) { //параметры текста в попапе
+						return 'white' //перебивает цвет bodyColor
+					},
+					labelColor: function (constext) { //параметры квадрата в попапе
+						return {
+							borderColor: 'green',
+							borderWidth: 10,
+						}
+					}
+				}
+			},
+
 		},
 		layout: {
 			responsive: false,
 			padding: {
 				left: 50 //отступ диаграммы от какого-либо края
-		  }
+			}
 		},
-		
-		
-}
-
+	}
 
 	return (
-		<div>
-			<Line maintainAspectRatio={false} height={150}  options={options} data={data} />
+		<div className='grath'>
+			<Line
+				datasetIdKey={id}
+				//maintainAspectRatio={false} 
+				//height={150}  
+				//width={50}
+				options={options}
+				data={data} />
 		</div>
 	)
 }
