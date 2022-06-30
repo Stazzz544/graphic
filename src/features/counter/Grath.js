@@ -10,7 +10,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useDispatch } from 'react-redux';
-import { dataAccumulator, setStartDataValue } from './grathSlice';
+import { dataAccumulator, setGrathSegments, setStartDataValue } from './grathSlice';
 import { useEffect } from 'react';
 import './grath.css';
 import {dateFromUTC } from '../../utils/utils'
@@ -61,6 +61,7 @@ const Grath = ({
 			id: id, 
 			segments: segments, 
 			baseColor: randomColor}))
+		dispatch(setGrathSegments(startIntervalValue))
 	}, [])
 
 	useEffect(() => {
